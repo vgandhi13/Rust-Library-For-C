@@ -1,0 +1,50 @@
+https://medium.com/@AlexanderObregon/integrating-rust-into-existing-c-c-projects-e0810dbddded
+
+
+Step 2: Creating a Rust Library
+Next, we will create a Rust library that can be linked to C/C++. First, create a new Rust library project:
+
+cargo new --lib my_rust_lib
+This command creates a new library named my_rust_lib. Now, navigate to the new library's directory:
+
+cd my_rust_lib
+In src/lib.rs, you can define the Rust functions that you want to expose to C/C++. For example:
+
+#[no_mangle]
+pub extern "C" fn rust_function() -> i32 {
+    42
+}
+The #[no_mangle] attribute tells Rust not to mangle the function name during compilation, which allows it to be called from C/C++ code. The extern "C" keyword specifies the C calling convention.
+
+Step 3: Building the Rust Library
+To build the Rust library as a static library, add this to your Cargo.toml:
+
+[lib]
+name = "my_rust_lib"
+crate-type = ["staticlib"]
+Then, you can build your library using the command:
+
+cargo build --release
+This will create a static library file (libmy_rust_lib.a) in the target/release directory.
+
+Step 4: Calling Rust Functions from C/C++
+Create a C/C++ file that includes a header file with the declaration of the Rust function. For example, in main.c:
+
+#include <stdio.h>
+
+extern int rust_function();
+
+int main() {
+    int result = rust_function();
+    printf("Called Rust function, result: %d\n", result);
+    return 0;
+}
+And in rust_function.h:
+
+extern int rust_function();
+Step 5: Linking the Rust Library
+Finally, compile your C/C++ code and link it against the Rust library:
+
+gcc -o main main.c -L target/release -lmy_rust_lib -lpthread -ldl
+This command compiles main.c, links it against libmy_rust_lib.a, and produces an executable called main. The -L flag tells gcc where to look for the library, and the -l flag specifies the name of the library.
+
